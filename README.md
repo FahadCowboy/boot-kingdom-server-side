@@ -1,4 +1,4 @@
-# Getting Started with Boot Kingdom
+# Boot Kingdom server
 
 This server is created to make it attached with a MongoDB database and created with express js which is easy an cool Backend framwork. We have done a complete CRUD operation in this server. 
 
