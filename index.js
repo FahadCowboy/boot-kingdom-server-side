@@ -7,11 +7,13 @@ require('dotenv').config()
 const port = process.env.PORT || 4000
 const ObjectId = require('mongodb').ObjectId
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
+const fileUpload = require('express-fileupload')
 
 
-//Middlewire
+//Middlewires
 app.use(cors())
 app.use(express.json())
+app.use(fileUpload())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z46cs.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -94,8 +96,33 @@ const run = async () => {
 
       // POST API for a product
       app.post('/boots', async (req, res) => {
-         const newProduct = req.body
-         const result = await bootCollection.insertOne(newProduct)
+         // const newProduct = req.body
+         // const result = await bootCollection.insertOne(newProduct)
+         // res.send(result)
+
+         const name = req.body.name
+         const description = req.body.description
+         const price = req.body.price
+         const collection = req.body.collection
+         const picture = req.files.image
+
+         const picData = picture.data
+         const encodedPic = picData.toString('base64')
+         const imageBuffer = Buffer.from(encodedPic, 'base64')
+
+         product = {
+            name,
+            description,
+            price,
+            collection,
+            image: imageBuffer
+         }
+
+         console.log('Body', req.body)
+         console.log('File', req.files)
+         console.log('image', imageBuffer)
+
+         const result = await bootCollection.insertOne(product)
          res.send(result)
       })
 
@@ -108,6 +135,7 @@ const run = async () => {
       })
 
       // POST API for a User
+      // This Api will post a new Fresh user data when a new user will sign up. This action will be happened in RegisterWithEmailAndPassword() function in the useFirebase Hook
       app.post('/users', async (req, res) => {
          const newUser = req.body
          const result = await usersCollection.insertOne(newUser)
@@ -116,6 +144,7 @@ const run = async () => {
       })
 
       // UPDATE API for a User
+      // This API will be called when an user Will sign in with Google then it will check that the user does exist into the Database as an user. If the user does exist into the Database as an user, this API will not take any action but If user doesn't exist into the database, this will add a new user into the Database. This action will be happened in loginWithGoogle() function in the useFirebase Hook
       app.put('/users', async (req, res) => {
          const newUser = req.body
          const filter = { email: newUser.email };
@@ -128,6 +157,8 @@ const run = async () => {
          res.send(result)
       })
 
+      // UPDATE user Data when 
+      // This API is created to update an user's role as Admin, and it is will be called into 'Make Admin' Component.
       app.put('/users/admin', async (req, res) => {
          const user = req.body
          const filter = {email: user.email}
