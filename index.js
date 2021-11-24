@@ -71,7 +71,13 @@ const run = async () => {
       })
 
       // GET API to read orders for specific user
-   
+      app.get(`/orders/:email`, async (req, res) => {
+         const email = req.params.email
+         const query = {email: email}
+         const cursor = orderCollection.find(query)
+         const orders = await cursor.toArray()
+         res.send(orders)
+      })
 
       // GET API to verify admin
       app.get(`/users/:email`, async (req, res) => {
