@@ -6,6 +6,7 @@ const app = express()
 require('dotenv').config()
 const port = process.env.PORT || 4000
 const ObjectId = require('mongodb').ObjectId
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
 
 
 //Middlewire
@@ -140,7 +141,7 @@ const run = async () => {
          res.send(result)
       })
 
-      // DELETE API for a specifit order
+      // DELETE API for a specific order
       app.delete(`/orders/:id`, async (req, res) => {
          const id = req.params.id
          console.log(id)
@@ -149,7 +150,7 @@ const run = async () => {
          res.send(result)
       })
 
-      // DELETE API for a specifit order
+      // DELETE API for a specific order
       app.delete(`/boots/:id`, async (req, res) => {
          const id = req.params.id
          console.log(id)
@@ -172,6 +173,38 @@ const run = async () => {
          const result = await orderCollection.updateOne(filter, updateDoc, options);
          res.send(result)
       })
+
+      // UPDATE API for payment confirm
+      app.put(`/orders/payment/:id`, async (req, res) => {
+         const id = req.params.id
+         const modifiedOrderFromUI = req.body
+         const filter = {_id: ObjectId(id)}
+         const options = { upsert: false }
+         const updateDoc = {
+            $set: {
+              payment: modifiedOrderFromUI
+            },
+         }
+         console.log(updateDoc)
+         const result = await orderCollection.updateOne(filter, updateDoc, options);
+         res.send(result)
+      })
+
+      // Payment API
+      app.post('/create-payment-intent', async (req, res) => {
+         const paymentInfo = req.body
+         const amount = paymentInfo.price * 100
+         const paymentIntent = await stripe.paymentIntents.create({
+            currency: "usd",
+            amount: amount,
+            payment_method_types: ["card"]
+         })
+
+         res.send({
+            clientSecret: paymentIntent.client_secret,
+         })
+      })
+
 
    }
    finally{
