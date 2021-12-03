@@ -2,12 +2,12 @@
 const express = require('express')
 const {MongoClient} = require('mongodb')
 const cors = require('cors')
+const fileUpload = require('express-fileupload')
 const app = express()
 require('dotenv').config()
 const port = process.env.PORT || 4000
 const ObjectId = require('mongodb').ObjectId
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
-const fileUpload = require('express-fileupload')
 
 
 //Middlewires
@@ -60,6 +60,7 @@ const run = async () => {
          const cursor = orderCollection.find(query)
          const orders = await cursor.toArray()
          res.send(orders)
+         console.log()
       })
 
       // GET API to read all the orders
@@ -71,7 +72,7 @@ const run = async () => {
       })
 
       // GET API to read orders for specific user
-      app.get(`/orders/:email`, async (req, res) => {
+      app.get(`/myOrders/:email`, async (req, res) => {
          const email = req.params.email
          const query = {email: email}
          const cursor = orderCollection.find(query)
